@@ -7,9 +7,6 @@ CLASSES_DIR = "classes"
 REQ_FILE = "req.txt"
 RES_FOLDER = "auraenabled_responses"
 
-# -------------------------------------------------------------------
-# Sensitive regex
-# -------------------------------------------------------------------
 sensitive_pattern = re.compile(
     r"(crypt|hash|salt|pwd|pass|password|session|secret|key|cipher|md5|encrypt|security|token|consumer|auth)",
     re.IGNORECASE
@@ -17,7 +14,6 @@ sensitive_pattern = re.compile(
 
 os.makedirs(RES_FOLDER, exist_ok=True)
 
-# -------------------------------------------------------------------
 def get_namespace_prefix(xml_path):
     if not os.path.exists(xml_path):
         return ""
@@ -28,7 +24,6 @@ def get_namespace_prefix(xml_path):
 
 namespace_prefix = get_namespace_prefix("package.xml")
 
-# -------------------------------------------------------------------
 pattern = re.compile(
     r'@AuraEnabled(?:\s*\([^)]*\))?'              
     r'(?:\s*@\w+(?:\s*\([^)]*\))?)*'               
@@ -41,7 +36,6 @@ pattern = re.compile(
     re.IGNORECASE
 )
 
-# -------------------------------------------------------------------
 def find_auraenabled_no_param_methods(classes_dir):
     findings = {}
     for root, _, files in os.walk(classes_dir):
@@ -56,7 +50,6 @@ def find_auraenabled_no_param_methods(classes_dir):
                     findings[classname] = matches
     return findings
 
-# -------------------------------------------------------------------
 def extract_request_metadata():
     with open(REQ_FILE, "r", encoding="utf-8") as f:
         raw = f.read()
@@ -87,7 +80,6 @@ def extract_request_metadata():
 
     return url, headers, body
 
-# -------------------------------------------------------------------
 def update_message_in_body(original_body, namespace, classname, method):
     payload = {
         "actions": [
@@ -111,7 +103,6 @@ def update_message_in_body(original_body, namespace, classname, method):
     updated = re.sub(r"message=[^&\s]*", f"message={new_message}", original_body)
     return updated
 
-# -------------------------------------------------------------------
 def send_requests_for_methods():
     url, headers, original_body = extract_request_metadata()
     results = find_auraenabled_no_param_methods(CLASSES_DIR)
@@ -148,14 +139,10 @@ def send_requests_for_methods():
                 if sensitive_values:
                     f.write("*** SENSITIVE DATA DETECTED: " + ", ".join(sensitive_values) + " ***\n")
 
-            # -------------------------------------------------------------------
-            # TERMINAL OUTPUT — SHOW ONLY SENSITIVE KEY(S)
-            # -------------------------------------------------------------------
             if sensitive_values:
                 print(f"{classname}.{method} -> {resp.status_code} -> sensitive: {', '.join(sensitive_values)}")
             else:
                 print(f"{classname}.{method} -> {resp.status_code}")
 
-# -------------------------------------------------------------------
 if __name__ == "__main__":
     send_requests_for_methods()
