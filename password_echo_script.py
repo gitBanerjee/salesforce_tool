@@ -144,5 +144,6 @@ def send_requests_for_methods():
             else:
                 print(f"{classname}.{method} -> {resp.status_code}")
 
+# Main function do not add anything here
 if __name__ == "__main__":
     send_requests_for_methods()
